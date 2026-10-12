@@ -13,6 +13,34 @@ For the intended taxonomy of modules not yet built, see
 |---|---|---|
 | `directory.user.search` | Search the institute directory | `Dean Academic`, `acadadmin`, `placement_chairman`, `placement_coordinator`, `placement_officer` |
 
+## `leave_management`
+
+| Code | What it allows | Held by |
+|---|---|---|
+| `leave_management.leave_request.create` | Submit a leave request | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.view_self` | View own leave requests | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.view` | View all leave requests (within scope) | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.modify_pending` | Modify own pending leave request | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.withdraw_pending` | Withdraw own pending leave request | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.cancel_approved` | Request cancellation of approved leave | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.extend` | Submit leave extension | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.resume` | Submit resumption of duty | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.approve` | Approve/reject leave requests | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_request.view_audit` | View leave request audit trail | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_balance.view_self` | View own leave balance | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_balance.view` | View leave balances (within scope) | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_balance.adjust` | Adjust leave balances (admin) | `leave_administrator` |
+| `leave_management.substitute_request.create` | Nominate a substitute | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.substitute_request.respond` | Accept/decline substitute nomination | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.substitute_request.view_self` | View substitute nominations for self | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.leave_policy.manage` | Maintain leave policy parameters | `leave_administrator` |
+| `leave_management.leave_policy.view` | View leave policy parameters | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar` |
+| `leave_management.holiday_calendar.manage` | Maintain holiday and RH calendar | `leave_administrator` |
+| `leave_management.holiday_calendar.view` | View holiday and RH calendar | `dean`, `deputy_registrar_estt`, `director`, `employee`, `leave_administrator`, `registrar`, `unit_head` |
+| `leave_management.offline_leave.record` | Record offline-sanctioned leave | `leave_administrator` |
+| `leave_management.offline_leave.view` | View offline-sanctioned leave entries | `dean`, `deputy_registrar_estt`, `director`, `leave_administrator`, `registrar` |
+| `leave_management.year_end.process` | Run year-end leave processing | `leave_administrator` |
+
 ## `placement_cell`
 
 | Code | What it allows | Held by |

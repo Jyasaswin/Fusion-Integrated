@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Button, Card, DataTable, Group, Modal, Notification, Select, Stack, Text, TextInput } from "@mantine/core";
+import { Button, Card, Container, Group, Modal, Select, Stack, TextInput } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { useLeavePolicies, useCreateLeavePolicy, useUpdateLeavePolicy } from "../hooks/useLeaveRequests";
 import type { LeaveCategory, EmployeeType, LeavePolicy } from "../api/types";
 
@@ -18,8 +21,9 @@ const EMPLOYEE_TYPES: { value: EmployeeType; label: string }[] = [
 ];
 
 export default function LeavePolicyPage() {
-  const notify = Notification.useNotification();
-  const { policies, isPending, refetch } = useLeavePolicies();
+  const notify = notifications;
+  const { data, isPending, refetch } = useLeavePolicies();
+  const policies = data ?? { results: [] };
   const createPolicy = useCreateLeavePolicy();
   const updatePolicy = useUpdateLeavePolicy();
 
@@ -95,6 +99,7 @@ export default function LeavePolicyPage() {
           rows={policies.results}
           loading={isPending}
           minWidth={1000}
+          rowKey={(row) => row.id}
           columns={[
             { key: "category", header: "Category" },
             { key: "employee_type", header: "Employee Type" },
@@ -116,7 +121,7 @@ export default function LeavePolicyPage() {
               ),
             },
           ]}
-          empty={{ icon: "fa-regular:cogs", title: "No policies", description: "Create your first leave policy." }}
+          empty={{ title: "No policies", description: "Create your first leave policy." }}
         />
       </Card>
 

@@ -1,6 +1,6 @@
 """API serializers for Leave Management — read serializers."""
 from rest_framework import serializers
-from ..models import (
+from ...models import (
     LeaveRequest,
     LeaveBalance,
     LeavePolicy,

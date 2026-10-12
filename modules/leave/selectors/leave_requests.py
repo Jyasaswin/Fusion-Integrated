@@ -4,7 +4,7 @@ from typing import Optional
 
 from django.db.models import Q, QuerySet
 
-from .models import (
+from ..models import (
     HolidayCalendar,
     LeaveBalance,
     LeavePolicy,
@@ -61,18 +61,14 @@ def is_holiday(date_obj: date, is_restricted: bool = False) -> bool:
 
 def visible_leave_requests(principal) -> QuerySet[LeaveRequest]:
     """Return leave requests visible to the principal based on permissions."""
-    from fusion_auth.permissions import get_user_permissions
-
-    perms = get_user_permissions(principal)
-
     qs = LeaveRequest.objects.select_related("extension_of", "original_request")
 
-    if "leave_management.leave_request.view" in perms:
+    if principal.has_permission("leave_management.leave_request.view"):
         # Can see all (within scope - scope filtering would go here)
         return qs
 
-    if "leave_management.leave_request.view_self" in perms:
-        return qs.filter(user_id=principal.erp_user_id)
+    if principal.has_permission("leave_management.leave_request.view_self"):
+        return qs.filter(user_id=principal.user_id)
 
     return qs.none()
 
@@ -99,18 +95,14 @@ def get_user_leave_requests(
 
 def get_pending_approvals(principal) -> QuerySet[LeaveRequest]:
     """Get leave requests pending approval by this principal."""
-    from fusion_auth.permissions import get_user_permissions
-
-    perms = get_user_permissions(principal)
     qs = LeaveRequest.objects.none()
 
-    if "leave_management.leave_request.approve" in perms:
+    if principal.has_permission("leave_management.leave_request.approve"):
         # Unit Head can see requests in unit_head_review
         qs = qs | LeaveRequest.objects.filter(status=LeaveStatus.UNIT_HEAD_REVIEW)
 
         # Establishment can see requests in establishment_review
-        if "leave_management.leave_request.approve" in perms:
-            qs = qs | LeaveRequest.objects.filter(status=LeaveStatus.ESTABLISHMENT_REVIEW)
+        qs = qs | LeaveRequest.objects.filter(status=LeaveStatus.ESTABLISHMENT_REVIEW)
 
         # Final authority can see requests in final_sanction
         qs = qs | LeaveRequest.objects.filter(status=LeaveStatus.FINAL_SANCTION)

@@ -1,12 +1,22 @@
 """API filters for Leave Management."""
 import django_filters
-from ..models import LeaveRequest, LeaveBalance, SubstituteRequest, HolidayCalendar, LeavePolicy, OfflineLeaveEntry
+from ..models import (
+    EmployeeType,
+    HolidayCalendar,
+    LeaveBalance,
+    LeaveCategory,
+    LeavePolicy,
+    LeaveRequest,
+    LeaveStatus,
+    OfflineLeaveEntry,
+    SubstituteRequest,
+)
 
 
 class LeaveRequestFilter(django_filters.FilterSet):
     user_id = django_filters.NumberFilter()
-    category = django_filters.ChoiceFilter(choices=LeaveRequest.Category.choices)
-    status = django_filters.ChoiceFilter(choices=LeaveRequest.Status.choices)
+    category = django_filters.ChoiceFilter(choices=LeaveCategory.choices)
+    status = django_filters.ChoiceFilter(choices=LeaveStatus.choices)
     start_date_after = django_filters.DateFilter(field_name="start_date", lookup_expr="gte")
     start_date_before = django_filters.DateFilter(field_name="start_date", lookup_expr="lte")
     end_date_after = django_filters.DateFilter(field_name="end_date", lookup_expr="gte")
@@ -21,7 +31,7 @@ class LeaveRequestFilter(django_filters.FilterSet):
 
 class LeaveBalanceFilter(django_filters.FilterSet):
     user_id = django_filters.NumberFilter()
-    category = django_filters.ChoiceFilter(choices=LeaveBalance.Category.choices)
+    category = django_filters.ChoiceFilter(choices=LeaveCategory.choices)
     year = django_filters.NumberFilter()
 
     class Meta:
@@ -50,8 +60,8 @@ class HolidayCalendarFilter(django_filters.FilterSet):
 
 
 class LeavePolicyFilter(django_filters.FilterSet):
-    category = django_filters.ChoiceFilter(choices=LeavePolicy.Category.choices)
-    employee_type = django_filters.ChoiceFilter(choices=LeavePolicy.EmployeeType.choices)
+    category = django_filters.ChoiceFilter(choices=LeaveCategory.choices)
+    employee_type = django_filters.ChoiceFilter(choices=EmployeeType.choices)
     is_active = django_filters.BooleanFilter()
 
     class Meta:
@@ -61,7 +71,7 @@ class LeavePolicyFilter(django_filters.FilterSet):
 
 class OfflineLeaveEntryFilter(django_filters.FilterSet):
     user_id = django_filters.NumberFilter()
-    category = django_filters.ChoiceFilter(choices=OfflineLeaveEntry.Category.choices)
+    category = django_filters.ChoiceFilter(choices=LeaveCategory.choices)
     year = django_filters.NumberFilter(field_name="start_date", lookup_expr="year")
 
     class Meta:

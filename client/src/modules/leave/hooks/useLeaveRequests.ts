@@ -3,7 +3,6 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  type UseMutationOptions,
 } from "@tanstack/react-query";
 
 import { http } from "../../../lib/http";
@@ -14,7 +13,6 @@ import type {
   LeavePolicy,
   HolidayCalendar,
   SubstituteRequest,
-  OfflineLeaveEntry,
   Page,
   LeaveRequestCreate,
   LeaveRequestModify,
@@ -28,7 +26,7 @@ import type {
   FinalSanction,
   LeaveBalanceAdjust,
   OfflineLeaveEntry as OfflineLeaveEntryType,
-} from "./types";
+} from "../api/types";
 
 const KEY = "leave";
 

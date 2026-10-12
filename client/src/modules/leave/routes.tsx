@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { Navigate, type RouteObject } from "react-router-dom";
-import { RequirePermission } from "@fusion/auth";
+import { RequirePermission } from "../../auth/RequirePermission";
 
 const ApplyLeavePage = lazy(() => import("./pages/ApplyLeavePage"));
 const MyLeaveRequestsPage = lazy(() => import("./pages/MyLeaveRequestsPage"));
@@ -62,7 +62,7 @@ export const routes: RouteObject[] = [
   {
     path: "reports",
     element: (
-      <RequirePermission code="leave_management.leave_report.view">
+      <RequirePermission code="leave_management.year_end.process">
         <LeaveReportsPage />
       </RequirePermission>
     ),

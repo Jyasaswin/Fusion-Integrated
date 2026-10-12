@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { Button, Card, DataTable, Group, Modal, Notification, Stack, Text, TextInput } from "@mantine/core";
+import { Button, Card, Container, Group, Modal, Stack, TextInput } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { useHolidayCalendar, useCreateHoliday, useUpdateHoliday } from "../hooks/useLeaveRequests";
 import type { HolidayCalendar } from "../api/types";
 
 export default function HolidayCalendarPage() {
-  const notify = Notification.useNotification();
+  const notify = notifications;
   const [filters, setFilters] = useState({ year: new Date().getFullYear(), is_restricted: false });
-  const { calendar, isPending, refetch } = useHolidayCalendar(filters);
+  const { data, isPending, refetch } = useHolidayCalendar(filters);
+  const calendar = data ?? { results: [] };
   const createHoliday = useCreateHoliday();
   const updateHoliday = useUpdateHoliday();
 
@@ -100,6 +104,7 @@ export default function HolidayCalendarPage() {
           rows={calendar.results}
           loading={isPending}
           minWidth={800}
+          rowKey={(row) => row.id}
           columns={[
             { key: "date", header: "Date", render: (r) => new Date(r.date).toLocaleDateString() },
             { key: "name", header: "Name" },
@@ -116,7 +121,7 @@ export default function HolidayCalendarPage() {
               ),
             },
           ]}
-          empty={{ icon: "fa-regular:calendar", title: "No holidays", description: "Add holidays for the selected year." }}
+          empty={{ title: "No holidays", description: "Add holidays for the selected year." }}
         />
       </Card>
 

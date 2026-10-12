@@ -1,6 +1,6 @@
 """Leave Management events."""
 from core.events.outbox import emit
-from ..models import LeaveRequest, SubstituteRequest, OfflineLeaveEntry
+from .models import LeaveRequest, SubstituteRequest, OfflineLeaveEntry
 
 
 PRODUCES = (
@@ -75,7 +75,7 @@ def emit_substitute_accepted(leave_request: LeaveRequest, principal) -> None:
         {
             "leave_request_id": leave_request.id,
             "substitute_id": leave_request.substitute_id,
-            "accepted_by": principal.erp_user_id,
+            "accepted_by": principal.user_id,
         },
         dedupe_key=f"substitute.accepted:{leave_request.id}",
     )
@@ -87,7 +87,7 @@ def emit_substitute_declined(leave_request: LeaveRequest, principal, reason: str
         {
             "leave_request_id": leave_request.id,
             "substitute_id": leave_request.substitute_id,
-            "declined_by": principal.erp_user_id,
+            "declined_by": principal.user_id,
             "reason": reason,
         },
         dedupe_key=f"substitute.declined:{leave_request.id}",
@@ -100,7 +100,7 @@ def emit_unit_head_reviewed(leave_request: LeaveRequest, recommend: bool, princi
         {
             "leave_request_id": leave_request.id,
             "recommend": recommend,
-            "unit_head_id": principal.erp_user_id,
+            "unit_head_id": principal.user_id,
             "new_status": leave_request.status,
         },
         dedupe_key=f"unit_head.reviewed:{leave_request.id}:{leave_request.status}",
@@ -113,7 +113,7 @@ def emit_establishment_reviewed(leave_request: LeaveRequest, action: str, princi
         {
             "leave_request_id": leave_request.id,
             "action": action,
-            "establishment_id": principal.erp_user_id,
+            "establishment_id": principal.user_id,
             "new_status": leave_request.status,
         },
         dedupe_key=f"establishment.reviewed:{leave_request.id}:{leave_request.status}",
@@ -126,7 +126,7 @@ def emit_final_sanction(leave_request: LeaveRequest, approve: bool, principal) -
         {
             "leave_request_id": leave_request.id,
             "approve": approve,
-            "final_authority_id": principal.erp_user_id,
+            "final_authority_id": principal.user_id,
             "new_status": leave_request.status,
         },
         dedupe_key=f"final_sanction:{leave_request.id}:{leave_request.status}",

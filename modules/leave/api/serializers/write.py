@@ -1,7 +1,8 @@
 """API serializers for Leave Management — write serializers."""
 from rest_framework import serializers
 from datetime import date
-from ..models import (
+from ...models import (
+    LeaveCategory,
     LeaveRequest,
     LeaveBalance,
     LeavePolicy,
@@ -34,7 +35,7 @@ class HolidayCalendarWriteSerializer(serializers.ModelSerializer):
 
 class LeaveBalanceAdjustSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-    category = serializers.ChoiceField(choices=LeaveBalance.Category.choices)
+    category = serializers.ChoiceField(choices=LeaveCategory.choices)
     year = serializers.IntegerField()
     adjustment = serializers.DecimalField(max_digits=6, decimal_places=2)
     reason = serializers.CharField(required=False, allow_blank=True)

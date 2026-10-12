@@ -1,15 +1,15 @@
 import { useState } from "react";
 import {
+  Badge,
   Button,
   Card,
-  DataTable,
+  Container,
   Group,
-  Notification,
   Select,
-  Stack,
-  Tag,
-  Text,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { useLeaveRequests, useWithdrawLeaveRequest, useCancelLeaveRequest, useExtendLeaveRequest, useResumeLeaveRequest } from "../hooks/useLeaveRequests";
 import type { LeaveStatus } from "../api/types";
 
@@ -30,9 +30,10 @@ const STATUS_COLORS: Record<LeaveStatus, string> = {
 };
 
 export default function MyLeaveRequestsPage() {
-  const notify = Notification.useNotification();
+  const notify = notifications;
   const [filters, setFilters] = useState({ status: "", category: "" });
-  const { leaveRequests, isPending, refetch } = useLeaveRequests(filters);
+  const { data, isPending, refetch } = useLeaveRequests(filters);
+  const leaveRequests = data ?? { results: [] };
   const withdrawLeave = useWithdrawLeaveRequest();
   const cancelLeave = useCancelLeaveRequest();
   const extendLeave = useExtendLeaveRequest();
@@ -95,11 +96,11 @@ export default function MyLeaveRequestsPage() {
     <Container size="xl">
       <PageHeader title="My Leave Requests" subtitle="View and manage your leave requests" />
       <Card padding="lg">
-        <Stack gap="md" direction={window.innerWidth > 768 ? "horizontal" : "vertical"}>
+        <Group gap="md" mb="md" wrap="wrap">
           <Select
             placeholder="Filter by status"
             value={filters.status}
-            onChange={(v) => setFilters((p) => ({ ...p, status: v }))}
+            onChange={(v) => setFilters((p) => ({ ...p, status: v ?? "" }))}
             data={[
               { value: "", label: "All Statuses" },
               { value: "draft", label: "Draft" },
@@ -118,11 +119,12 @@ export default function MyLeaveRequestsPage() {
             ]}
             style={{ minWidth: 200 }}
           />
-        </Stack>
+        </Group>
         <DataTable
           rows={leaveRequests.results}
           loading={isPending}
           minWidth={1000}
+          rowKey={(row) => row.id}
           columns={[
             { key: "id", header: "#" },
             { key: "category", header: "Category" },
@@ -137,14 +139,14 @@ export default function MyLeaveRequestsPage() {
               render: (r) => new Date(r.end_date).toLocaleDateString(),
             },
             { key: "total_days", header: "Days" },
-            { key: "purpose", header: "Purpose", truncate: 50 },
+            { key: "purpose", header: "Purpose" },
             {
               key: "status",
               header: "Status",
               render: (r) => (
-                <Tag color={STATUS_COLORS[r.status as LeaveStatus] || "gray"} variant="light">
+                <Badge color={STATUS_COLORS[r.status as LeaveStatus] || "gray"} variant="light">
                   {r.status.replace("_", " ")}
-                </Tag>
+                </Badge>
               ),
             },
             {
@@ -176,7 +178,7 @@ export default function MyLeaveRequestsPage() {
               ),
             },
           ]}
-          empty={{ icon: "fa-regular:calendar-xmark", title: "No leave requests", description: "You haven't applied for any leave yet." }}
+          empty={{ title: "No leave requests", description: "You haven't applied for any leave yet." }}
         />
       </Card>
     </Container>

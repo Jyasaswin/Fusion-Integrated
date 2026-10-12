@@ -1,4 +1,6 @@
-import { Card, DataTable, Notification, Stack, Tag, Text } from "@mantine/core";
+import { Badge, Card, Container } from "@mantine/core";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { useLeaveRequests } from "../hooks/useLeaveRequests";
 import type { LeaveStatus } from "../api/types";
 
@@ -19,8 +21,8 @@ const STATUS_COLORS: Record<LeaveStatus, string> = {
 };
 
 export default function LeaveHistoryPage() {
-  const notify = Notification.useNotification();
-  const { leaveRequests, isPending } = useLeaveRequests({});
+  const { data, isPending } = useLeaveRequests({});
+  const leaveRequests = data ?? { results: [] };
 
   return (
     <Container size="xl">
@@ -30,6 +32,7 @@ export default function LeaveHistoryPage() {
           rows={leaveRequests.results}
           loading={isPending}
           minWidth={1000}
+          rowKey={(row) => row.id}
           columns={[
             { key: "id", header: "#" },
             { key: "category", header: "Category" },
@@ -44,15 +47,15 @@ export default function LeaveHistoryPage() {
               render: (r) => new Date(r.end_date).toLocaleDateString(),
             },
             { key: "total_days", header: "Days" },
-            { key: "purpose", header: "Purpose", truncate: 50 },
+            { key: "purpose", header: "Purpose" },
             { key: "station_leave", header: "Station Leave", render: (r) => r.station_leave ? "Yes" : "No" },
             {
               key: "status",
               header: "Status",
               render: (r) => (
-                <Tag color={STATUS_COLORS[r.status as LeaveStatus] || "gray"} variant="light">
+                <Badge color={STATUS_COLORS[r.status as LeaveStatus] || "gray"} variant="light">
                   {r.status.replace("_", " ")}
-                </Tag>
+                </Badge>
               ),
             },
             {
@@ -66,7 +69,7 @@ export default function LeaveHistoryPage() {
               render: (r) => r.approved_at ? new Date(r.approved_at).toLocaleDateString() : "-",
             },
           ]}
-          empty={{ icon: "fa-regular:calendar-xmark", title: "No leave history", description: "You haven't applied for any leave yet." }}
+          empty={{ title: "No leave history", description: "You haven't applied for any leave yet." }}
         />
       </Card>
     </Container>

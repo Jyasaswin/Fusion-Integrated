@@ -6,10 +6,26 @@ from typing import Optional
 from django.db import transaction
 from django.utils import timezone
 
-from ..models import LeaveBalance, LeavePolicy, YearEndProcessing
+from ..models import LeaveBalance, LeavePolicy, OfflineLeaveEntry, YearEndProcessing
 from ..selectors.balances import get_or_create_balance, calculate_vl_to_el_conversion
 from ..selectors.leave_requests import get_leave_policy
 from ..domain.entities import LeaveCategory, EmployeeType
+
+
+@transaction.atomic
+def adjust_balance(
+    user_id: int,
+    category: str,
+    year: int,
+    adjustment: Decimal,
+    reason: str = "",
+) -> LeaveBalance:
+    """Adjust a leave balance (admin only)."""
+    balance = get_or_create_balance(user_id, category, year)
+    balance.closing_balance += adjustment
+    balance.credited += adjustment
+    balance.save(update_fields=["closing_balance", "credited", "updated_at"])
+    return balance
 
 
 @transaction.atomic

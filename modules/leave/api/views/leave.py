@@ -1,77 +1,81 @@
 """API views for Leave Management."""
 from datetime import date
-from rest_framework import generics, status, viewsets
+
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import generics, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.api.pagination import CursorPagination
+from fusion_auth.permissions import HasPermission
 
-from ..domain.entities import LeaveCategory, LeaveStatus
-from ..models import (
-    LeaveRequest,
+from ...domain.entities import LeaveCategory, LeaveStatus
+from ...models import (
+    HolidayCalendar,
     LeaveBalance,
     LeavePolicy,
-    HolidayCalendar,
-    SubstituteRequest,
+    LeaveRequest,
     OfflineLeaveEntry,
-    YearEndProcessing,
+    SubstituteRequest,
 )
-from ..selectors.leave_requests import (
-    visible_leave_requests,
+from ...selectors.leave_requests import (
     get_leave_request,
+    get_leave_request_history,
     get_pending_approvals,
     get_pending_substitute_requests,
-    get_leave_request_history,
-    get_overlapping_requests,
+    visible_leave_requests,
 )
-from ..selectors.balances import get_user_balances
-from ..services.leave_requests import (
+from ...services.balances import (
+    process_year_end,
+)
+from ...services.leave_requests import (
     create_leave_request,
-    submit_leave_request,
-    respond_to_substitute_request,
-    unit_head_review,
     establishment_review,
     final_sanction,
+    respond_to_substitute_request,
+    submit_leave_request,
+    unit_head_review,
 )
-from ..services.balances import (
-    credit_annual_entitlement,
-    process_year_end,
-    record_offline_leave,
+from ..filters import (
+    HolidayCalendarFilter,
+    LeaveBalanceFilter,
+    LeavePolicyFilter,
+    LeaveRequestFilter,
+    OfflineLeaveEntryFilter,
+    SubstituteRequestFilter,
 )
-from .serializers.read import (
-    LeaveRequestReadSerializer,
-    LeaveRequestListSerializer,
+from ..permissions import (
+    CanModifyPendingLeave,
+    HasModuleGrantLeave,
+    IsLeaveRequestOwner,
+    IsLeaveRequestOwnerOrApprover,
+    LeaveActionPermissionMixin,
+)
+from ..serializers.read import (
+    HolidayCalendarReadSerializer,
     LeaveBalanceReadSerializer,
     LeavePolicyReadSerializer,
-    HolidayCalendarReadSerializer,
-    SubstituteRequestReadSerializer,
+    LeaveRequestListSerializer,
+    LeaveRequestReadSerializer,
     OfflineLeaveEntryReadSerializer,
+    SubstituteRequestReadSerializer,
 )
-from .serializers.write import (
-    LeaveRequestCreateSerializer,
-    LeaveRequestModifySerializer,
-    LeaveRequestWithdrawSerializer,
-    LeaveRequestCancelSerializer,
-    LeaveRequestExtendSerializer,
-    LeaveRequestResumeSerializer,
-    SubstituteRequestRespondSerializer,
-    UnitHeadReviewSerializer,
+from ..serializers.write import (
     EstablishmentReviewSerializer,
     FinalSanctionSerializer,
-    LeavePolicyWriteSerializer,
     HolidayCalendarWriteSerializer,
     LeaveBalanceAdjustSerializer,
+    LeavePolicyWriteSerializer,
+    LeaveRequestCancelSerializer,
+    LeaveRequestCreateSerializer,
+    LeaveRequestExtendSerializer,
+    LeaveRequestModifySerializer,
+    LeaveRequestResumeSerializer,
+    LeaveRequestWithdrawSerializer,
     OfflineLeaveEntryWriteSerializer,
+    SubstituteRequestRespondSerializer,
+    UnitHeadReviewSerializer,
 )
-from .filters import (
-    LeaveRequestFilter,
-    LeaveBalanceFilter,
-    HolidayCalendarFilter,
-    LeavePolicyFilter,
-    SubstituteRequestFilter,
-    OfflineLeaveEntryFilter,
-)
-from .permissions import HasModuleGrantLeave, IsLeaveRequestOwnerOrApprover, CanModifyPendingLeave
 
 
 class StandardResultsSetPagination(CursorPagination):
@@ -80,18 +84,81 @@ class StandardResultsSetPagination(CursorPagination):
 
 # -- Leave Request Views ------------------------------------------------------
 
-class LeaveRequestViewSet(viewsets.ModelViewSet):
+class LeaveRequestViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
     permission_classes = [HasModuleGrantLeave, IsLeaveRequestOwnerOrApprover]
+    action_permissions = {
+        "metadata": (),
+        "list": (HasPermission(
+            "leave_management.leave_request.view_self",
+            "leave_management.leave_request.view",
+        ),),
+        "retrieve": (
+            HasPermission(
+                "leave_management.leave_request.view_self",
+                "leave_management.leave_request.view",
+            ),
+            IsLeaveRequestOwnerOrApprover,
+        ),
+        "create": (HasPermission("leave_management.leave_request.create"),),
+        "update": (
+            HasPermission("leave_management.leave_request.modify_pending"),
+            CanModifyPendingLeave,
+        ),
+        "partial_update": (
+            HasPermission("leave_management.leave_request.modify_pending"),
+            CanModifyPendingLeave,
+        ),
+        "submit": (
+            HasPermission("leave_management.leave_request.create"),
+            CanModifyPendingLeave,
+        ),
+        "modify": (
+            HasPermission("leave_management.leave_request.modify_pending"),
+            CanModifyPendingLeave,
+        ),
+        "withdraw": (
+            HasPermission("leave_management.leave_request.withdraw_pending"),
+            CanModifyPendingLeave,
+        ),
+        "cancel": (
+            HasPermission("leave_management.leave_request.cancel_approved"),
+            IsLeaveRequestOwner,
+        ),
+        "extend": (
+            HasPermission("leave_management.leave_request.extend"),
+            IsLeaveRequestOwner,
+        ),
+        "resume": (
+            HasPermission("leave_management.leave_request.resume"),
+            IsLeaveRequestOwner,
+        ),
+        "history": (HasPermission(
+            "leave_management.leave_request.view_self",
+            "leave_management.leave_request.view_audit",
+        ),),
+    }
     pagination_class = StandardResultsSetPagination
     filterset_class = LeaveRequestFilter
     lookup_field = "pk"
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return LeaveRequest.objects.none()
         return visible_leave_requests(self.request.principal)
+
+    def get_action_leave_request(self, request, pk):
+        leave_request = get_leave_request(pk, request.principal)
+        if leave_request is not None:
+            self.check_object_permissions(request, leave_request)
+        return leave_request
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
-            return LeaveRequestReadSerializer if self.action == "retrieve" else LeaveRequestListSerializer
+            return (
+                LeaveRequestReadSerializer
+                if self.action == "retrieve"
+                else LeaveRequestListSerializer
+            )
         if self.action == "create":
             return LeaveRequestCreateSerializer
         if self.action == "partial_update":
@@ -100,7 +167,7 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         lr = create_leave_request(
-            user_id=self.request.principal.erp_user_id,
+            user_id=self.request.principal.user_id,
             category=serializer.validated_data["category"],
             start_date=serializer.validated_data["start_date"],
             end_date=serializer.validated_data["end_date"],
@@ -110,19 +177,21 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
             station_leave=serializer.validated_data.get("station_leave", False),
             station_leave_address=serializer.validated_data.get("station_leave_address"),
             substitute_id=serializer.validated_data.get("substitute_id"),
-            employee_type="faculty" if self.request.principal.erp_user_id < 1000 else "non_faculty",
+            employee_type="faculty" if self.request.principal.user_id < 1000 else "non_faculty",
             principal=self.request.principal,
         )
         serializer.instance = lr
 
-    @action(detail=True, methods=["post"], permission_classes=[HasModuleGrantLeave, CanModifyPendingLeave])
+    @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
+        if self.get_action_leave_request(request, pk) is None:
+            return Response({"detail": "Not found"}, status=404)
         lr = submit_leave_request(pk, request.principal)
         return Response(LeaveRequestReadSerializer(lr, context={"request": request}).data)
 
-    @action(detail=True, methods=["post"], permission_classes=[HasModuleGrantLeave, CanModifyPendingLeave])
+    @action(detail=True, methods=["post"])
     def modify(self, request, pk=None):
-        lr = get_leave_request(pk, request.principal)
+        lr = self.get_action_leave_request(request, pk)
         if not lr:
             return Response({"detail": "Not found"}, status=404)
 
@@ -131,9 +200,9 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(LeaveRequestReadSerializer(lr, context={"request": request}).data)
 
-    @action(detail=True, methods=["post"], permission_classes=[HasModuleGrantLeave, CanModifyPendingLeave])
+    @action(detail=True, methods=["post"])
     def withdraw(self, request, pk=None):
-        lr = get_leave_request(pk, request.principal)
+        lr = self.get_action_leave_request(request, pk)
         if not lr:
             return Response({"detail": "Not found"}, status=404)
 
@@ -144,18 +213,18 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         lr.status = LeaveStatus.WITHDRAWN
         lr.save(update_fields=["status", "updated_at"])
 
-        from ..services.leave_requests import _record_transition
+        from ...services.leave_requests import _record_transition
         _record_transition(
             lr, lr.status, LeaveStatus.WITHDRAWN,
-            request.principal.erp_user_id, "employee",
+            request.principal.user_id, "employee",
             serializer.validated_data.get("reason", "")
         )
 
         return Response(LeaveRequestReadSerializer(lr, context={"request": request}).data)
 
-    @action(detail=True, methods=["post"], permission_classes=[HasModuleGrantLeave])
+    @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
-        lr = get_leave_request(pk, request.principal)
+        lr = self.get_action_leave_request(request, pk)
         if not lr:
             return Response({"detail": "Not found"}, status=404)
 
@@ -168,15 +237,15 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         lr.status = LeaveStatus.CANCELLED
         lr.save(update_fields=["status", "updated_at"])
 
-        from ..services.leave_requests import _record_transition
+        from ...services.leave_requests import _record_transition
         _record_transition(
             lr, LeaveStatus.APPROVED, LeaveStatus.CANCELLED,
-            request.principal.erp_user_id, "employee",
+            request.principal.user_id, "employee",
             serializer.validated_data.get("reason", "")
         )
 
         # Restore balance
-        from ..selectors.balances import get_or_create_balance
+        from ...selectors.balances import get_or_create_balance
         balance = get_or_create_balance(lr.user_id, lr.category, lr.start_date.year)
         balance.availed -= lr.total_days
         balance.closing_balance += lr.total_days
@@ -184,9 +253,9 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
 
         return Response(LeaveRequestReadSerializer(lr, context={"request": request}).data)
 
-    @action(detail=True, methods=["post"], permission_classes=[HasModuleGrantLeave])
+    @action(detail=True, methods=["post"])
     def extend(self, request, pk=None):
-        lr = get_leave_request(pk, request.principal)
+        lr = self.get_action_leave_request(request, pk)
         if not lr:
             return Response({"detail": "Not found"}, status=404)
 
@@ -223,9 +292,9 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
 
         return Response(LeaveRequestReadSerializer(extension, context={"request": request}).data)
 
-    @action(detail=True, methods=["post"], permission_classes=[HasModuleGrantLeave])
+    @action(detail=True, methods=["post"])
     def resume(self, request, pk=None):
-        lr = get_leave_request(pk, request.principal)
+        lr = self.get_action_leave_request(request, pk)
         if not lr:
             return Response({"detail": "Not found"}, status=404)
 
@@ -242,10 +311,10 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         lr.resumption_date = serializer.validated_data["resumption_date"]
         lr.save(update_fields=["status", "resumption_date", "updated_at"])
 
-        from ..services.leave_requests import _record_transition
+        from ...services.leave_requests import _record_transition
         _record_transition(
             lr, LeaveStatus.APPROVED, LeaveStatus.RESUMPTION_PENDING,
-            request.principal.erp_user_id, "employee",
+            request.principal.user_id, "employee",
             "Resumption of duty submitted"
         )
 
@@ -253,7 +322,7 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def history(self, request, pk=None):
-        lr = get_leave_request(pk, request.principal)
+        lr = self.get_action_leave_request(request, pk)
         if not lr:
             return Response({"detail": "Not found"}, status=404)
 
@@ -265,20 +334,33 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
 # -- Pending Approvals --------------------------------------------------------
 
 class PendingApprovalsView(generics.ListAPIView):
-    permission_classes = [HasModuleGrantLeave]
+    permission_classes = [
+        HasModuleGrantLeave,
+        HasPermission("leave_management.leave_request.approve"),
+    ]
     serializer_class = LeaveRequestListSerializer
     pagination_class = StandardResultsSetPagination
     filterset_class = LeaveRequestFilter
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return LeaveRequest.objects.none()
         return get_pending_approvals(self.request.principal)
 
 
 # -- Approval Actions ---------------------------------------------------------
 
-class ApprovalActionsViewSet(viewsets.ViewSet):
+class ApprovalActionsViewSet(LeaveActionPermissionMixin, viewsets.ViewSet):
     permission_classes = [HasModuleGrantLeave]
+    serializer_class = LeaveRequestReadSerializer
+    action_permissions = {
+        "metadata": (),
+        "unit_head_review": (HasPermission("leave_management.leave_request.approve"),),
+        "establishment_review": (HasPermission("leave_management.leave_request.approve"),),
+        "final_sanction": (HasPermission("leave_management.leave_request.approve"),),
+    }
 
+    @extend_schema(request=UnitHeadReviewSerializer, responses=LeaveRequestReadSerializer)
     @action(detail=False, methods=["post"], url_path=r"(?P<leave_request_id>\d+)/unit-head-review")
     def unit_head_review(self, request, leave_request_id=None):
         serializer = UnitHeadReviewSerializer(data=request.data)
@@ -292,7 +374,12 @@ class ApprovalActionsViewSet(viewsets.ViewSet):
         )
         return Response(LeaveRequestReadSerializer(lr, context={"request": request}).data)
 
-    @action(detail=False, methods=["post"], url_path=r"(?P<leave_request_id>\d+)/establishment-review")
+    @extend_schema(request=EstablishmentReviewSerializer, responses=LeaveRequestReadSerializer)
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path=r"(?P<leave_request_id>\d+)/establishment-review",
+    )
     def establishment_review(self, request, leave_request_id=None):
         serializer = EstablishmentReviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -305,6 +392,7 @@ class ApprovalActionsViewSet(viewsets.ViewSet):
         )
         return Response(LeaveRequestReadSerializer(lr, context={"request": request}).data)
 
+    @extend_schema(request=FinalSanctionSerializer, responses=LeaveRequestReadSerializer)
     @action(detail=False, methods=["post"], url_path=r"(?P<leave_request_id>\d+)/final-sanction")
     def final_sanction(self, request, leave_request_id=None):
         serializer = FinalSanctionSerializer(data=request.data)
@@ -321,14 +409,28 @@ class ApprovalActionsViewSet(viewsets.ViewSet):
 
 # -- Substitute Requests ------------------------------------------------------
 
-class SubstituteRequestViewSet(viewsets.ReadOnlyModelViewSet):
+class SubstituteRequestViewSet(LeaveActionPermissionMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = [HasModuleGrantLeave]
+    action_permissions = {
+        "metadata": (),
+        "list": (HasPermission(
+            "leave_management.substitute_request.view_self",
+            "leave_management.substitute_request.respond",
+        ),),
+        "retrieve": (HasPermission(
+            "leave_management.substitute_request.view_self",
+            "leave_management.substitute_request.respond",
+        ),),
+        "respond": (HasPermission("leave_management.substitute_request.respond"),),
+    }
     serializer_class = SubstituteRequestReadSerializer
     pagination_class = StandardResultsSetPagination
     filterset_class = SubstituteRequestFilter
 
     def get_queryset(self):
-        return get_pending_substitute_requests(self.request.principal.erp_user_id)
+        if getattr(self, "swagger_fake_view", False):
+            return SubstituteRequest.objects.none()
+        return get_pending_substitute_requests(self.request.principal.user_id)
 
     @action(detail=True, methods=["post"])
     def respond(self, request, pk=None):
@@ -347,25 +449,49 @@ class SubstituteRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
 # -- Leave Balance ------------------------------------------------------------
 
-class LeaveBalanceViewSet(viewsets.ReadOnlyModelViewSet):
+class LeaveBalanceViewSet(LeaveActionPermissionMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = [HasModuleGrantLeave]
+    action_permissions = {
+        "metadata": (),
+        "list": (HasPermission(
+            "leave_management.leave_balance.view_self",
+            "leave_management.leave_balance.view",
+        ),),
+        "retrieve": (HasPermission(
+            "leave_management.leave_balance.view_self",
+            "leave_management.leave_balance.view",
+        ),),
+    }
     serializer_class = LeaveBalanceReadSerializer
     pagination_class = StandardResultsSetPagination
     filterset_class = LeaveBalanceFilter
 
     def get_queryset(self):
-        return get_user_balances(self.request.principal.erp_user_id)
+        if getattr(self, "swagger_fake_view", False):
+            return LeaveBalance.objects.none()
+        from ...selectors.balances import get_all_user_balances
+
+        return get_all_user_balances(self.request.principal.user_id)
 
 
-class LeaveBalanceAdminViewSet(viewsets.ViewSet):
+class LeaveBalanceAdminViewSet(LeaveActionPermissionMixin, viewsets.ViewSet):
     permission_classes = [HasModuleGrantLeave]
+    serializer_class = LeaveBalanceReadSerializer
+    action_permissions = {
+        "metadata": (),
+        "adjust": (HasPermission("leave_management.leave_balance.adjust"),),
+    }
 
+    @extend_schema(
+        request=LeaveBalanceAdjustSerializer,
+        responses=LeaveBalanceReadSerializer,
+    )
     @action(detail=False, methods=["post"], url_path="adjust")
     def adjust(self, request):
         serializer = LeaveBalanceAdjustSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        from ..services.balances import adjust_balance
+        from ...services.balances import adjust_balance
         balance = adjust_balance(
             serializer.validated_data["user_id"],
             serializer.validated_data["category"],
@@ -378,8 +504,23 @@ class LeaveBalanceAdminViewSet(viewsets.ViewSet):
 
 # -- Leave Policy -------------------------------------------------------------
 
-class LeavePolicyViewSet(viewsets.ModelViewSet):
+class LeavePolicyViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
     permission_classes = [HasModuleGrantLeave]
+    action_permissions = {
+        "metadata": (),
+        "list": (HasPermission(
+            "leave_management.leave_policy.view",
+            "leave_management.leave_policy.manage",
+        ),),
+        "retrieve": (HasPermission(
+            "leave_management.leave_policy.view",
+            "leave_management.leave_policy.manage",
+        ),),
+        "create": (HasPermission("leave_management.leave_policy.manage"),),
+        "update": (HasPermission("leave_management.leave_policy.manage"),),
+        "partial_update": (HasPermission("leave_management.leave_policy.manage"),),
+        "destroy": (HasPermission("leave_management.leave_policy.manage"),),
+    }
     pagination_class = StandardResultsSetPagination
     filterset_class = LeavePolicyFilter
 
@@ -394,8 +535,23 @@ class LeavePolicyViewSet(viewsets.ModelViewSet):
 
 # -- Holiday Calendar ---------------------------------------------------------
 
-class HolidayCalendarViewSet(viewsets.ModelViewSet):
+class HolidayCalendarViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
     permission_classes = [HasModuleGrantLeave]
+    action_permissions = {
+        "metadata": (),
+        "list": (HasPermission(
+            "leave_management.holiday_calendar.view",
+            "leave_management.holiday_calendar.manage",
+        ),),
+        "retrieve": (HasPermission(
+            "leave_management.holiday_calendar.view",
+            "leave_management.holiday_calendar.manage",
+        ),),
+        "create": (HasPermission("leave_management.holiday_calendar.manage"),),
+        "update": (HasPermission("leave_management.holiday_calendar.manage"),),
+        "partial_update": (HasPermission("leave_management.holiday_calendar.manage"),),
+        "destroy": (HasPermission("leave_management.holiday_calendar.manage"),),
+    }
     pagination_class = StandardResultsSetPagination
     filterset_class = HolidayCalendarFilter
 
@@ -410,8 +566,17 @@ class HolidayCalendarViewSet(viewsets.ModelViewSet):
 
 # -- Offline Leave Entry ------------------------------------------------------
 
-class OfflineLeaveEntryViewSet(viewsets.ModelViewSet):
+class OfflineLeaveEntryViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
     permission_classes = [HasModuleGrantLeave]
+    action_permissions = {
+        "metadata": (),
+        "list": (HasPermission("leave_management.offline_leave.view"),),
+        "retrieve": (HasPermission("leave_management.offline_leave.view"),),
+        "create": (HasPermission("leave_management.offline_leave.record"),),
+        "update": (HasPermission("leave_management.offline_leave.record"),),
+        "partial_update": (HasPermission("leave_management.offline_leave.record"),),
+        "destroy": (HasPermission("leave_management.offline_leave.record"),),
+    }
     pagination_class = StandardResultsSetPagination
     filterset_class = OfflineLeaveEntryFilter
 
@@ -426,11 +591,36 @@ class OfflineLeaveEntryViewSet(viewsets.ModelViewSet):
 
 # -- Year End Processing ------------------------------------------------------
 
-class YearEndProcessingViewSet(viewsets.ViewSet):
+class YearEndProcessingViewSet(LeaveActionPermissionMixin, viewsets.ViewSet):
     permission_classes = [HasModuleGrantLeave]
+    serializer_class = LeaveRequestReadSerializer
+    action_permissions = {
+        "metadata": (),
+        "run": (HasPermission("leave_management.year_end.process"),),
+    }
 
+    @extend_schema(
+        request=inline_serializer(
+            name="YearEndProcessingRequest",
+            fields={"year": serializers.IntegerField(required=False)},
+        ),
+        responses=inline_serializer(
+            name="YearEndProcessingResponse",
+            fields={
+                "status": serializers.CharField(),
+                "processed_users": serializers.IntegerField(),
+                "errors": serializers.ListField(child=serializers.JSONField()),
+            },
+        ),
+    )
     @action(detail=False, methods=["post"], url_path="run")
     def run(self, request):
         year = request.data.get("year", date.today().year)
         yep = process_year_end(year, request.principal)
-        return Response({"status": yep.status, "processed_users": yep.processed_users, "errors": yep.errors})
+        return Response(
+            {
+                "status": yep.status,
+                "processed_users": yep.processed_users,
+                "errors": yep.errors,
+            }
+        )

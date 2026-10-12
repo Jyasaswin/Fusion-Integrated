@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { Button, Card, DataTable, Group, Modal, Notification, Select, Stack, Text, Textarea, TextInput } from "@mantine/core";
+import { Button, Card, Container, Group, Modal, Select, Stack, Textarea, TextInput } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { useOfflineLeaveEntries, useCreateOfflineLeaveEntry } from "../hooks/useLeaveRequests";
-import type { LeaveCategory, OfflineLeaveEntry } from "../api/types";
+import type { LeaveCategory } from "../api/types";
 
 const CATEGORIES: { value: LeaveCategory; label: string }[] = [
   { value: "CL", label: "Casual Leave (CL)" },
@@ -13,8 +16,9 @@ const CATEGORIES: { value: LeaveCategory; label: string }[] = [
 ];
 
 export default function OfflineLeaveEntryPage() {
-  const notify = Notification.useNotification();
-  const { offlineEntries, isPending, refetch } = useOfflineLeaveEntries();
+  const notify = notifications;
+  const { data, isPending, refetch } = useOfflineLeaveEntries();
+  const offlineEntries = data ?? { results: [] };
   const createOfflineEntry = useCreateOfflineLeaveEntry();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -47,7 +51,10 @@ export default function OfflineLeaveEntryPage() {
 
   const handleSubmit = async () => {
     try {
-      await createOfflineEntry.mutateAsync(formData);
+      await createOfflineEntry.mutateAsync({
+        ...formData,
+        user_id: Number(formData.user_id),
+      });
       notify.show({ title: "Success", message: "Offline leave entry recorded", color: "green" });
       setModalOpen(false);
       refetch();
@@ -64,6 +71,7 @@ export default function OfflineLeaveEntryPage() {
           rows={offlineEntries.results}
           loading={isPending}
           minWidth={1000}
+          rowKey={(row) => row.id}
           columns={[
             { key: "user_id", header: "Employee ID" },
             { key: "category", header: "Category" },
@@ -85,7 +93,7 @@ export default function OfflineLeaveEntryPage() {
             { key: "verified", header: "Verified", render: (r) => r.verified ? "Yes" : "No" },
             { key: "created_at", header: "Recorded At", render: (r) => new Date(r.created_at).toLocaleDateString() },
           ]}
-          empty={{ icon: "fa-regular:file-import", title: "No offline entries", description: "Record offline-sanctioned leave entries here." }}
+          empty={{ title: "No offline entries", description: "Record offline-sanctioned leave entries here." }}
         />
       </Card>
 

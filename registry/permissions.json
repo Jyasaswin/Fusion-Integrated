@@ -34,6 +34,255 @@
       "scope_permissions": [],
       "system_permissions": []
     },
+    "leave_management": {
+      "grants": {
+        "dean": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_policy.view",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.offline_leave.view",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "deputy_registrar_estt": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_policy.view",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.offline_leave.view",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "director": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_policy.view",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.offline_leave.view",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "employee": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.view_self"
+        ],
+        "leave_administrator": [
+          "leave_management.holiday_calendar.manage",
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.adjust",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_policy.manage",
+          "leave_management.leave_policy.view",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.offline_leave.record",
+          "leave_management.offline_leave.view",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self",
+          "leave_management.year_end.process"
+        ],
+        "registrar": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_policy.view",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.offline_leave.view",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "unit_head": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ]
+      },
+      "module_grants": [
+        "dean",
+        "deputy_registrar_estt",
+        "director",
+        "employee",
+        "leave_administrator",
+        "registrar",
+        "unit_head"
+      ],
+      "permissions": [
+        {
+          "code": "leave_management.leave_request.create",
+          "label": "Submit a leave request"
+        },
+        {
+          "code": "leave_management.leave_request.view_self",
+          "label": "View own leave requests"
+        },
+        {
+          "code": "leave_management.leave_request.view",
+          "label": "View all leave requests (within scope)"
+        },
+        {
+          "code": "leave_management.leave_request.modify_pending",
+          "label": "Modify own pending leave request"
+        },
+        {
+          "code": "leave_management.leave_request.withdraw_pending",
+          "label": "Withdraw own pending leave request"
+        },
+        {
+          "code": "leave_management.leave_request.cancel_approved",
+          "label": "Request cancellation of approved leave"
+        },
+        {
+          "code": "leave_management.leave_request.extend",
+          "label": "Submit leave extension"
+        },
+        {
+          "code": "leave_management.leave_request.resume",
+          "label": "Submit resumption of duty"
+        },
+        {
+          "code": "leave_management.leave_request.approve",
+          "label": "Approve/reject leave requests"
+        },
+        {
+          "code": "leave_management.leave_request.view_audit",
+          "label": "View leave request audit trail"
+        },
+        {
+          "code": "leave_management.leave_balance.view_self",
+          "label": "View own leave balance"
+        },
+        {
+          "code": "leave_management.leave_balance.view",
+          "label": "View leave balances (within scope)"
+        },
+        {
+          "code": "leave_management.leave_balance.adjust",
+          "label": "Adjust leave balances (admin)"
+        },
+        {
+          "code": "leave_management.substitute_request.create",
+          "label": "Nominate a substitute"
+        },
+        {
+          "code": "leave_management.substitute_request.respond",
+          "label": "Accept/decline substitute nomination"
+        },
+        {
+          "code": "leave_management.substitute_request.view_self",
+          "label": "View substitute nominations for self"
+        },
+        {
+          "code": "leave_management.leave_policy.manage",
+          "label": "Maintain leave policy parameters"
+        },
+        {
+          "code": "leave_management.leave_policy.view",
+          "label": "View leave policy parameters"
+        },
+        {
+          "code": "leave_management.holiday_calendar.manage",
+          "label": "Maintain holiday and RH calendar"
+        },
+        {
+          "code": "leave_management.holiday_calendar.view",
+          "label": "View holiday and RH calendar"
+        },
+        {
+          "code": "leave_management.offline_leave.record",
+          "label": "Record offline-sanctioned leave"
+        },
+        {
+          "code": "leave_management.offline_leave.view",
+          "label": "View offline-sanctioned leave entries"
+        },
+        {
+          "code": "leave_management.year_end.process",
+          "label": "Run year-end leave processing"
+        }
+      ],
+      "scope_permissions": [],
+      "system_permissions": [
+        "leave_management.leave_request.auto_expire",
+        "leave_management.leave_request.sla_escalation",
+        "leave_management.leave_request.sla_reminder"
+      ]
+    },
     "placement_cell": {
       "grants": {
         "Dean Academic": [

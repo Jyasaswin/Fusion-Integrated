@@ -1,5 +1,7 @@
-import { Card, Group, Grid, Notification, Stack, Text, Badge } from "@mantine/core";
+import { useState } from "react";
+import { Badge, Card, Container, Grid, Group, Stack, Text } from "@mantine/core";
 import { useLeaveBalances } from "../hooks/useLeaveRequests";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import type { LeaveCategory } from "../api/types";
 
 const CATEGORY_LABELS: Record<LeaveCategory, string> = {
@@ -22,7 +24,8 @@ const CATEGORY_COLORS: Record<LeaveCategory, string> = {
 
 export default function LeaveBalancePage() {
   const [year, setYear] = useState(() => new Date().getFullYear());
-  const { balances, isPending } = useLeaveBalances(year);
+  const { data } = useLeaveBalances(year);
+  const balances = data ?? { results: [] };
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
@@ -51,7 +54,7 @@ export default function LeaveBalancePage() {
           <Grid.Col key={balance.id} span={6}>
             <Card padding="lg" withBorder>
               <Group justify="space-between">
-                <Text weight={700} size="lg">
+                <Text fw={700} size="lg">
                   {CATEGORY_LABELS[balance.category as LeaveCategory] || balance.category}
                 </Text>
                 <Badge color={CATEGORY_COLORS[balance.category as LeaveCategory] || "gray"}>
@@ -61,23 +64,23 @@ export default function LeaveBalancePage() {
               <Stack gap="xs" mt="md">
                 <Group justify="space-between">
                   <Text>Opening</Text>
-                  <Text weight={600}>{balance.opening_balance}</Text>
+                  <Text fw={600}>{balance.opening_balance}</Text>
                 </Group>
                 <Group justify="space-between">
-                  <Text color="green">Credited</Text>
-                  <Text weight={600} color="green">+{balance.credited}</Text>
+                  <Text c="green">Credited</Text>
+                  <Text fw={600} c="green">+{balance.credited}</Text>
                 </Group>
                 <Group justify="space-between">
-                  <Text color="red">Availed</Text>
-                  <Text weight={600} color="red">-{balance.availed}</Text>
+                  <Text c="red">Availed</Text>
+                  <Text fw={600} c="red">-{balance.availed}</Text>
                 </Group>
                 <Group justify="space-between">
-                  <Text color="orange">Lapsed</Text>
-                  <Text weight={600} color="orange">-{balance.lapsed}</Text>
+                  <Text c="orange">Lapsed</Text>
+                  <Text fw={600} c="orange">-{balance.lapsed}</Text>
                 </Group>
                 <Group justify="space-between" style={{ borderTop: "1px solid var(--mantine-color-gray-3)", paddingTop: 8 }}>
                   <Text size="lg">Closing Balance</Text>
-                  <Text size="lg" weight={700}>{balance.closing_balance}</Text>
+                  <Text size="lg" fw={700}>{balance.closing_balance}</Text>
                 </Group>
               </Stack>
             </Card>
@@ -86,7 +89,7 @@ export default function LeaveBalancePage() {
       </Grid>
       {balances.results.length === 0 && (
         <Card padding="lg">
-          <Text align="center" color="dimmed">
+          <Text ta="center" c="dimmed">
             No leave balances found for {year}.
           </Text>
         </Card>

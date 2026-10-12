@@ -1,9 +1,13 @@
-import { Card, DataTable, Group, Notification, Stack, Tag, Button } from "@mantine/core";
+import { Badge, Button, Card, Container, Group, Text } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { useSubstituteRequests, useRespondToSubstituteRequest } from "../hooks/useLeaveRequests";
 
 export default function SubstituteRequestsPage() {
-  const notify = Notification.useNotification();
-  const { substituteRequests, isPending, refetch } = useSubstituteRequests();
+  const notify = notifications;
+  const { data, isPending, refetch } = useSubstituteRequests();
+  const substituteRequests = data ?? { results: [] };
   const respondToSubstitute = useRespondToSubstituteRequest();
 
   const handleRespond = async (id: number, accept: boolean) => {
@@ -25,6 +29,7 @@ export default function SubstituteRequestsPage() {
           rows={substituteRequests.results}
           loading={isPending}
           minWidth={1000}
+          rowKey={(row) => row.id}
           columns={[
             { key: "id", header: "#" },
             { key: "leave_request_category", header: "Leave Category" },
@@ -45,12 +50,12 @@ export default function SubstituteRequestsPage() {
               key: "status",
               header: "Status",
               render: (r) => (
-                <Tag
+                <Badge
                   color={r.status === "pending" ? "orange" : r.status === "accepted" ? "green" : "red"}
                   variant="light"
                 >
                   {r.status}
-                </Tag>
+                </Badge>
               ),
             },
             {
@@ -71,7 +76,7 @@ export default function SubstituteRequestsPage() {
                 ),
             },
           ]}
-          empty={{ icon: "fa-regular:user-check", title: "No substitute requests", description: "No pending substitute nominations." }}
+          empty={{ title: "No substitute requests", description: "No pending substitute nominations." }}
         />
       </Card>
     </Container>

@@ -33,7 +33,7 @@ from ..selectors.leave_requests import (
     get_leave_balance,
     is_holiday,
 )
-from . import events
+from .. import events
 
 
 def _record_transition(
@@ -170,8 +170,8 @@ def create_leave_request(
         leave_request,
         "none",
         entities.LeaveStatus.DRAFT,
-        principal.erp_user_id,
-        principal.designation or "employee",
+        principal.user_id,
+        principal.active_role or "employee",
         "Leave request created",
     )
 
@@ -188,7 +188,7 @@ def submit_leave_request(
     """Submit a draft leave request for approval."""
     lr = LeaveRequest.objects.select_for_update().get(pk=leave_request_id)
 
-    if lr.user_id != principal.erp_user_id:
+    if lr.user_id != principal.user_id:
         raise LeaveDomainError("Not your leave request")
 
     if lr.status != entities.LeaveStatus.DRAFT:
@@ -238,8 +238,8 @@ def submit_leave_request(
         lr,
         entities.LeaveStatus.DRAFT,
         lr.status,
-        principal.erp_user_id,
-        principal.designation or "employee",
+        principal.user_id,
+        principal.active_role or "employee",
         "Leave request submitted",
     )
 
@@ -260,7 +260,7 @@ def respond_to_substitute_request(
         pk=substitute_request_id
     )
 
-    if sr.substitute_id != principal.erp_user_id:
+    if sr.substitute_id != principal.user_id:
         raise LeaveDomainError("Not your substitute request")
 
     if sr.status != "pending":
@@ -281,7 +281,7 @@ def respond_to_substitute_request(
             lr,
             entities.LeaveStatus.SUBSTITUTE_PENDING,
             entities.LeaveStatus.UNIT_HEAD_REVIEW,
-            principal.erp_user_id,
+            principal.user_id,
             "substitute",
             "Substitute accepted",
         )
@@ -301,7 +301,7 @@ def respond_to_substitute_request(
             lr,
             entities.LeaveStatus.SUBSTITUTE_PENDING,
             entities.LeaveStatus.SUBMITTED,
-            principal.erp_user_id,
+            principal.user_id,
             "substitute",
             f"Substitute declined: {reason}",
         )
@@ -324,7 +324,7 @@ def unit_head_review(
     if lr.status != entities.LeaveStatus.UNIT_HEAD_REVIEW:
         raise InvalidTransitionError(lr.status, entities.LeaveStatus.UNIT_HEAD_REVIEW, lr.category)
 
-    lr.unit_head_id = principal.erp_user_id
+    lr.unit_head_id = principal.user_id
     lr.unit_head_remark = remark
     lr.unit_head_action_at = timezone.now()
 
@@ -352,7 +352,7 @@ def unit_head_review(
         lr,
         entities.LeaveStatus.UNIT_HEAD_REVIEW,
         to_status,
-        principal.erp_user_id,
+        principal.user_id,
         "unit_head",
         remark,
     )
@@ -375,7 +375,7 @@ def establishment_review(
     if lr.status != entities.LeaveStatus.ESTABLISHMENT_REVIEW:
         raise InvalidTransitionError(lr.status, entities.LeaveStatus.ESTABLISHMENT_REVIEW, lr.category)
 
-    lr.establishment_id = principal.erp_user_id
+    lr.establishment_id = principal.user_id
     lr.establishment_remark = remark
     lr.establishment_action_at = timezone.now()
 
@@ -393,7 +393,7 @@ def establishment_review(
         lr,
         entities.LeaveStatus.ESTABLISHMENT_REVIEW,
         lr.status,
-        principal.erp_user_id,
+        principal.user_id,
         "establishment",
         remark,
     )
@@ -416,7 +416,7 @@ def final_sanction(
     if lr.status != entities.LeaveStatus.FINAL_SANCTION:
         raise InvalidTransitionError(lr.status, entities.LeaveStatus.FINAL_SANCTION, lr.category)
 
-    lr.final_authority_id = principal.erp_user_id
+    lr.final_authority_id = principal.user_id
     lr.final_authority_remark = remark
     lr.final_authority_action_at = timezone.now()
 
@@ -441,7 +441,7 @@ def final_sanction(
         lr,
         entities.LeaveStatus.FINAL_SANCTION,
         lr.status,
-        principal.erp_user_id,
+        principal.user_id,
         "final_authority",
         remark,
     )

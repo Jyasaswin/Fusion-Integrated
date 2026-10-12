@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Card, DataTable, Group, Notification, Stack, Tag, Text, Button } from "@mantine/core";
+import { Badge, Button, Card, Container, Group } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { DataTable } from "../../../ui/components/DataTable";
+import { PageHeader } from "../../../ui/components/PageHeader";
 import { usePendingApprovals, useUnitHeadReview, useEstablishmentReview, useFinalSanction } from "../hooks/useLeaveRequests";
 import type { LeaveStatus } from "../api/types";
 
@@ -20,9 +23,10 @@ const STATUS_COLORS: Record<LeaveStatus, string> = {
 };
 
 export default function PendingApprovalsPage() {
-  const notify = Notification.useNotification();
+  const notify = notifications;
   const [filters, setFilters] = useState({ status: "", category: "" });
-  const { leaveRequests, isPending, refetch } = usePendingApprovals(filters);
+  const { data, isPending, refetch } = usePendingApprovals(filters);
+  const leaveRequests = data ?? { results: [] };
   const unitHeadReview = useUnitHeadReview();
   const establishmentReview = useEstablishmentReview();
   const finalSanction = useFinalSanction();
@@ -60,27 +64,27 @@ export default function PendingApprovalsPage() {
     }
   };
 
-  const getActions = (status: LeaveStatus) => {
+  const getActions = (status: LeaveStatus, id: number) => {
     switch (status) {
       case "unit_head_review":
         return (
           <Group>
-            <Button size="sm" color="green" onClick={() => handleUnitHeadReview(0, true)}>Recommend</Button>
-            <Button size="sm" color="red" onClick={() => handleUnitHeadReview(0, false)}>Not Recommend</Button>
+            <Button size="sm" color="green" onClick={() => handleUnitHeadReview(id, true)}>Recommend</Button>
+            <Button size="sm" color="red" onClick={() => handleUnitHeadReview(id, false)}>Not Recommend</Button>
           </Group>
         );
       case "establishment_review":
         return (
           <Group>
-            <Button size="sm" color="blue" onClick={() => handleEstablishmentReview(0, "forward")}>Forward</Button>
-            <Button size="sm" color="orange" onClick={() => handleEstablishmentReview(0, "return")}>Return</Button>
+            <Button size="sm" color="blue" onClick={() => handleEstablishmentReview(id, "forward")}>Forward</Button>
+            <Button size="sm" color="orange" onClick={() => handleEstablishmentReview(id, "return")}>Return</Button>
           </Group>
         );
       case "final_sanction":
         return (
           <Group>
-            <Button size="sm" color="green" onClick={() => handleFinalSanction(0, true)}>Approve</Button>
-            <Button size="sm" color="red" onClick={() => handleFinalSanction(0, false)}>Reject</Button>
+            <Button size="sm" color="green" onClick={() => handleFinalSanction(id, true)}>Approve</Button>
+            <Button size="sm" color="red" onClick={() => handleFinalSanction(id, false)}>Reject</Button>
           </Group>
         );
       default:
@@ -92,7 +96,7 @@ export default function PendingApprovalsPage() {
     <Container size="xl">
       <PageHeader title="Pending Approvals" subtitle="Leave requests awaiting your review" />
       <Card padding="lg">
-        <Stack gap="md" direction={window.innerWidth > 768 ? "horizontal" : "vertical"}>
+        <Group gap="md" mb="md" wrap="wrap">
           <select
             value={filters.status}
             onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}
@@ -106,11 +110,12 @@ export default function PendingApprovalsPage() {
             <option value="establishment_review">Establishment Review</option>
             <option value="final_sanction">Final Sanction</option>
           </select>
-        </Stack>
+        </Group>
         <DataTable
           rows={leaveRequests.results}
           loading={isPending}
           minWidth={1000}
+          rowKey={(row) => row.id}
           columns={[
             { key: "id", header: "#" },
             { key: "user_id", header: "Employee ID" },
@@ -126,23 +131,23 @@ export default function PendingApprovalsPage() {
               render: (r) => new Date(r.end_date).toLocaleDateString(),
             },
             { key: "total_days", header: "Days" },
-            { key: "purpose", header: "Purpose", truncate: 50 },
+            { key: "purpose", header: "Purpose" },
             {
               key: "status",
               header: "Status",
               render: (r) => (
-                <Tag color={STATUS_COLORS[r.status as LeaveStatus] || "gray"} variant="light">
+                <Badge color={STATUS_COLORS[r.status as LeaveStatus] || "gray"} variant="light">
                   {r.status.replace("_", " ")}
-                </Tag>
+                </Badge>
               ),
             },
             {
               key: "actions",
               header: "Actions",
-              render: (r) => getActions(r.status as LeaveStatus),
+              render: (r) => getActions(r.status as LeaveStatus, r.id),
             },
           ]}
-          empty={{ icon: "fa-regular:clock", title: "No pending approvals", description: "All caught up!" }}
+          empty={{ title: "No pending approvals", description: "All caught up!" }}
         />
       </Card>
     </Container>

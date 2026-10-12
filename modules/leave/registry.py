@@ -56,9 +56,9 @@ NAV_ITEMS = [
      "icon": "FaFileImport", "to": "/leave/offline-entry",
      "required_permission": "leave_management.offline_leave.record",
      "sort_order": 90},
-    {"code": "leave.reports", "label": "Leave Reports",
+    {"code": "leave.year_end", "label": "Year-End Processing",
      "icon": "FaChartBar", "to": "/leave/reports",
-     "required_permission": "leave_management.leave_report.view",
+     "required_permission": "leave_management.year_end.process",
      "sort_order": 95},
 ]
 
@@ -98,10 +98,6 @@ PERMISSIONS = [
     ("leave_management.offline_leave.record", "Record offline-sanctioned leave"),
     ("leave_management.offline_leave.view", "View offline-sanctioned leave entries"),
 
-    # Leave Report permissions
-    ("leave_management.leave_report.view", "View leave reports"),
-    ("leave_management.leave_report.export", "Export leave reports"),
-
     # Year-end processing
     ("leave_management.year_end.process", "Run year-end leave processing"),
 ]
@@ -111,7 +107,6 @@ SYSTEM_PERMISSIONS = [
     "leave_management.leave_request.auto_expire",
     "leave_management.leave_request.sla_reminder",
     "leave_management.leave_request.sla_escalation",
-    "leave_management.year_end.process",
 ]
 
 _EMPLOYEE = [
@@ -142,7 +137,6 @@ _ESTABLISHMENT = [
     "leave_management.leave_policy.view",
     "leave_management.holiday_calendar.view",
     "leave_management.offline_leave.view",
-    "leave_management.leave_report.view",
 ]
 
 _LEAVE_ADMIN = [
@@ -151,7 +145,6 @@ _LEAVE_ADMIN = [
     "leave_management.holiday_calendar.manage",
     "leave_management.offline_leave.record",
     "leave_management.leave_balance.adjust",
-    "leave_management.leave_report.export",
     "leave_management.year_end.process",
 ]
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 from django.db.models import QuerySet
 
-from .models import LeaveBalance
+from ..models import LeaveBalance
 from ..domain.entities import LeaveCategory, EmployeeType
 
 
@@ -38,21 +38,6 @@ def get_all_user_balances(user_id: int) -> QuerySet[LeaveBalance]:
 def get_balances_for_category(category: str, year: int) -> QuerySet[LeaveBalance]:
     """Get all user balances for a specific category and year."""
     return LeaveBalance.objects.filter(category=category, year=year).select_related()
-
-
-def adjust_balance(
-    user_id: int,
-    category: str,
-    year: int,
-    adjustment: float,
-    reason: str = "",
-) -> LeaveBalance:
-    """Adjust a leave balance (admin only)."""
-    balance = get_or_create_balance(user_id, category, year)
-    balance.closing_balance += adjustment
-    balance.credited += adjustment
-    balance.save(update_fields=["closing_balance", "credited", "updated_at"])
-    return balance
 
 
 def calculate_vl_to_el_conversion(vl_balance: float) -> float:
