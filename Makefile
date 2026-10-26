@@ -21,6 +21,7 @@ migrate:  ## apply migrations
 seed:  ## register modules and load sample data
 	$(PY) manage.py seed_modules
 	$(PY) manage.py seed_demo
+	$(PY) manage.py seed_leave_demo
 
 dev:  ## run the server
 	$(PY) manage.py runserver 0.0.0.0:8002

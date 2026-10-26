@@ -148,13 +148,34 @@ _LEAVE_ADMIN = [
     "leave_management.year_end.process",
 ]
 
-#: Keyed by the designation name as it exists in globals_designation.
+#: Keyed by the role name IAM resolves for a person.
+#:
+#: `faculty` is the basic role IAM derives from the ERP's user_type, not a
+#: designation: build_session puts it in `roles` for every faculty member, so
+#: this one entry reaches all teaching staff and no student or staff member.
+#: The rest are the real designation names from globals_designation — the
+#: previous keys (`employee`, `unit_head`, `leave_administrator`, ...) did not
+#: exist in the ERP, which left every leave endpoint unreachable.
 ROLE_GRANTS = {
-    "employee": _EMPLOYEE,
-    "unit_head": _UNIT_HEAD,
-    "deputy_registrar_estt": _ESTABLISHMENT,
-    "registrar": _ESTABLISHMENT,
-    "dean": _ESTABLISHMENT,
-    "director": _ESTABLISHMENT,
-    "leave_administrator": _LEAVE_ADMIN,
+    # Every faculty member: employee self-service screens.
+    "faculty": _EMPLOYEE,
+
+    # Unit Head review — HODs are faculty-only roles in IAM's catalogue.
+    "HOD (CSE)": _UNIT_HEAD,
+    "HOD (ECE)": _UNIT_HEAD,
+    "HOD (ME)": _UNIT_HEAD,
+    "HOD (Design)": _UNIT_HEAD,
+    "HOD (NS)": _UNIT_HEAD,
+    "HOD (Liberal Arts)": _UNIT_HEAD,
+
+    # Establishment review — senior faculty offices.
+    "Dean (R&D)": _ESTABLISHMENT,
+    "Dean (P&D)": _ESTABLISHMENT,
+    "Dean_s": _ESTABLISHMENT,
+    "Director": _ESTABLISHMENT,
+
+    # Leave administration sits with the Dean (Academic), who is faculty.
+    # Registrar/Deputy Registrar are deliberately NOT granted: they are
+    # faculty-or-staff offices, and this module is faculty-only.
+    "Dean Academic": _LEAVE_ADMIN,
 }

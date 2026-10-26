@@ -109,7 +109,10 @@ def create_leave_request(
     if not policy:
         raise LeaveDomainError(f"No policy for {category} ({employee_type})")
 
-    balance = get_leave_balance(user_id, category, start_date.year)
+    from .balances import ensure_user_balances
+
+    balances = ensure_user_balances(user_id, employee_type, start_date.year)
+    balance = balances.get(category)
     if not balance:
         raise InsufficientBalanceError(category, 0, 1)
 
@@ -195,7 +198,8 @@ def submit_leave_request(
         raise InvalidTransitionError(lr.status, entities.LeaveStatus.SUBMITTED, lr.category)
 
     # Re-check eligibility at submission time
-    policy = get_leave_policy(lr.category, "faculty" if lr.user_id < 1000 else "non_faculty", lr.start_date)
+    employee_type = "faculty" if principal.kind == "faculty" else "non_faculty"
+    policy = get_leave_policy(lr.category, employee_type, lr.start_date)
     if not policy:
         raise LeaveDomainError("Policy no longer valid")
 

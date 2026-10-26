@@ -36,7 +36,7 @@
     },
     "leave_management": {
       "grants": {
-        "dean": [
+        "Dean (P&D)": [
           "leave_management.holiday_calendar.view",
           "leave_management.leave_balance.view",
           "leave_management.leave_balance.view_self",
@@ -56,7 +56,7 @@
           "leave_management.substitute_request.respond",
           "leave_management.substitute_request.view_self"
         ],
-        "deputy_registrar_estt": [
+        "Dean (R&D)": [
           "leave_management.holiday_calendar.view",
           "leave_management.leave_balance.view",
           "leave_management.leave_balance.view_self",
@@ -76,40 +76,7 @@
           "leave_management.substitute_request.respond",
           "leave_management.substitute_request.view_self"
         ],
-        "director": [
-          "leave_management.holiday_calendar.view",
-          "leave_management.leave_balance.view",
-          "leave_management.leave_balance.view_self",
-          "leave_management.leave_policy.view",
-          "leave_management.leave_request.approve",
-          "leave_management.leave_request.cancel_approved",
-          "leave_management.leave_request.create",
-          "leave_management.leave_request.extend",
-          "leave_management.leave_request.modify_pending",
-          "leave_management.leave_request.resume",
-          "leave_management.leave_request.view",
-          "leave_management.leave_request.view_audit",
-          "leave_management.leave_request.view_self",
-          "leave_management.leave_request.withdraw_pending",
-          "leave_management.offline_leave.view",
-          "leave_management.substitute_request.create",
-          "leave_management.substitute_request.respond",
-          "leave_management.substitute_request.view_self"
-        ],
-        "employee": [
-          "leave_management.holiday_calendar.view",
-          "leave_management.leave_balance.view_self",
-          "leave_management.leave_request.cancel_approved",
-          "leave_management.leave_request.create",
-          "leave_management.leave_request.extend",
-          "leave_management.leave_request.modify_pending",
-          "leave_management.leave_request.resume",
-          "leave_management.leave_request.view_self",
-          "leave_management.leave_request.withdraw_pending",
-          "leave_management.substitute_request.create",
-          "leave_management.substitute_request.view_self"
-        ],
-        "leave_administrator": [
+        "Dean Academic": [
           "leave_management.holiday_calendar.manage",
           "leave_management.holiday_calendar.view",
           "leave_management.leave_balance.adjust",
@@ -134,7 +101,7 @@
           "leave_management.substitute_request.view_self",
           "leave_management.year_end.process"
         ],
-        "registrar": [
+        "Dean_s": [
           "leave_management.holiday_calendar.view",
           "leave_management.leave_balance.view",
           "leave_management.leave_balance.view_self",
@@ -154,7 +121,27 @@
           "leave_management.substitute_request.respond",
           "leave_management.substitute_request.view_self"
         ],
-        "unit_head": [
+        "Director": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_policy.view",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.offline_leave.view",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "HOD (CSE)": [
           "leave_management.holiday_calendar.view",
           "leave_management.leave_balance.view",
           "leave_management.leave_balance.view_self",
@@ -171,16 +158,124 @@
           "leave_management.substitute_request.create",
           "leave_management.substitute_request.respond",
           "leave_management.substitute_request.view_self"
+        ],
+        "HOD (Design)": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "HOD (ECE)": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "HOD (Liberal Arts)": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "HOD (ME)": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "HOD (NS)": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.approve",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view",
+          "leave_management.leave_request.view_audit",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.respond",
+          "leave_management.substitute_request.view_self"
+        ],
+        "faculty": [
+          "leave_management.holiday_calendar.view",
+          "leave_management.leave_balance.view_self",
+          "leave_management.leave_request.cancel_approved",
+          "leave_management.leave_request.create",
+          "leave_management.leave_request.extend",
+          "leave_management.leave_request.modify_pending",
+          "leave_management.leave_request.resume",
+          "leave_management.leave_request.view_self",
+          "leave_management.leave_request.withdraw_pending",
+          "leave_management.substitute_request.create",
+          "leave_management.substitute_request.view_self"
         ]
       },
       "module_grants": [
-        "dean",
-        "deputy_registrar_estt",
-        "director",
-        "employee",
-        "leave_administrator",
-        "registrar",
-        "unit_head"
+        "Dean (P&D)",
+        "Dean (R&D)",
+        "Dean Academic",
+        "Dean_s",
+        "Director",
+        "HOD (CSE)",
+        "HOD (Design)",
+        "HOD (ECE)",
+        "HOD (Liberal Arts)",
+        "HOD (ME)",
+        "HOD (NS)",
+        "faculty"
       ],
       "permissions": [
         {

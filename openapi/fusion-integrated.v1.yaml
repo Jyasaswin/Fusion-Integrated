@@ -553,7 +553,12 @@ paths:
           description: ''
     post:
       operationId: v1_leave_leave_requests_create
-      description: Apply the module grant and the permission declared for each action.
+      description: |-
+        Return the read shape, including `id`.
+
+        The SPA creates a draft and immediately calls `/submit/` with the id
+        from this response; the write serializer does not carry `id`, so the
+        default 201 body would make the follow-up request hit `undefined`.
       tags:
       - v1
       requestBody:

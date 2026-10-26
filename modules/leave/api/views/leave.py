@@ -2,7 +2,7 @@
 from datetime import date
 
 from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import generics, serializers, viewsets
+from rest_framework import generics, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -165,6 +165,22 @@ class LeaveRequestViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
             return LeaveRequestModifySerializer
         return LeaveRequestReadSerializer
 
+    def create(self, request, *args, **kwargs):
+        """Return the read shape, including `id`.
+
+        The SPA creates a draft and immediately calls `/submit/` with the id
+        from this response; the write serializer does not carry `id`, so the
+        default 201 body would make the follow-up request hit `undefined`.
+        """
+        serializer = LeaveRequestCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            LeaveRequestReadSerializer(serializer.instance,
+                                       context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
     def perform_create(self, serializer):
         lr = create_leave_request(
             user_id=self.request.principal.user_id,
@@ -177,7 +193,7 @@ class LeaveRequestViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
             station_leave=serializer.validated_data.get("station_leave", False),
             station_leave_address=serializer.validated_data.get("station_leave_address"),
             substitute_id=serializer.validated_data.get("substitute_id"),
-            employee_type="faculty" if self.request.principal.user_id < 1000 else "non_faculty",
+            employee_type="faculty" if self.request.principal.kind == "faculty" else "non_faculty",
             principal=self.request.principal,
         )
         serializer.instance = lr
@@ -280,7 +296,7 @@ class LeaveRequestViewSet(LeaveActionPermissionMixin, viewsets.ModelViewSet):
             station_leave=False,
             station_leave_address=None,
             substitute_id=lr.substitute_id,
-            employee_type="faculty" if lr.user_id < 1000 else "non_faculty",
+            employee_type="faculty" if request.principal.kind == "faculty" else "non_faculty",
             principal=request.principal,
         )
         extension.extension_of = lr

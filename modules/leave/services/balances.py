@@ -29,6 +29,39 @@ def adjust_balance(
 
 
 @transaction.atomic
+def ensure_user_balances(
+    user_id: int,
+    employee_type: str,
+    year: int,
+) -> dict[str, LeaveBalance]:
+    """Provision the year's balances from the active policy, once.
+
+    A faculty member's first visit must not fail with "no balance": the
+    entitlement is a consequence of the policy, not an administrator chore.
+    Existing rows are left untouched, so re-running is safe and an adjustment
+    is never overwritten.
+    """
+    categories = (LeavePolicy.objects
+                  .filter(employee_type=employee_type, is_active=True)
+                  .values_list("category", flat=True).distinct())
+    balances: dict[str, LeaveBalance] = {}
+    for category in categories:
+        policy = get_leave_policy(category, employee_type, date(year, 1, 1))
+        if policy is None:
+            continue
+        balance, _ = LeaveBalance.objects.get_or_create(
+            user_id=user_id, category=category, year=year,
+            defaults={
+                "opening_balance": policy.annual_entitlement,
+                "credited": policy.annual_entitlement,
+                "closing_balance": policy.annual_entitlement,
+            },
+        )
+        balances[category] = balance
+    return balances
+
+
+@transaction.atomic
 def credit_annual_entitlement(
     user_id: int,
     category: str,
@@ -59,14 +92,21 @@ def process_year_end(year: int, principal) -> YearEndProcessing:
     from ..domain.rules.eligibility import year_end_processing as calc_year_end
 
     try:
-        balances = LeaveBalance.objects.filter(year=year)
+        balances = list(LeaveBalance.objects.filter(year=year))
+        # Resolve every employee's kind in one batched directory call rather
+        # than guessing from the numeric id.
+        from modules.directory import contracts as directory
+
+        kinds = {uid: u.kind
+                 for uid, u in directory.get_users([b.user_id for b in balances]).items()}
         processed = 0
         errors = []
 
         for balance in balances:
             try:
-                # Determine employee type (simplified)
-                employee_type = EmployeeType.FACULTY if balance.user_id < 1000 else EmployeeType.NON_FACULTY
+                kind = kinds.get(balance.user_id, "staff")
+                employee_type = (EmployeeType.FACULTY if kind == "faculty"
+                                 else EmployeeType.NON_FACULTY)
                 category = balance.category
 
                 lapsed, carried, el_credited = calc_year_end(
